@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { getFormatDate } from "../services/DateUtil";
+import { getFormatDate, setFormatDate } from "../services/DateUtil";
 export default {
   data() {
     return {
@@ -33,7 +33,7 @@ export default {
         {
           name: "address",
           label: "Billing Address",
-          field: "adress",
+          field: "address",
           sortable: true
         },
         { name: "total", align: "center", label: "Total", field: "total" },

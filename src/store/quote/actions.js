@@ -1,4 +1,4 @@
-import { transact } from "../../services/Transaction.js";
+import { transact, updateTransact } from "../../services/Transaction.js";
 import { getFormatDate, getUniqueKeyFromDate } from "../../services/DateUtil";
 import firebaseService from "../../services/firebase";
 var db = firebaseService.firestore;

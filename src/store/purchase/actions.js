@@ -3,9 +3,10 @@ import firebaseService from "firebase";
 import { getFormatDate } from "../../services/DateUtil";
 var db = firebaseService.firestore;
 const type = "purchase";
+const regExpression = /\W/g;
 
 export function add({ commit }, payload) {
-  transact(payload, type, `${getFormatDate(payload.date)}-${payload.invoice}`);
+  transact(payload, type, `${getFormatDate(payload.date)}-${payload.invoice.replace(regExpression, '')}`);
 }
 
 export function update({ commit }, payload) {

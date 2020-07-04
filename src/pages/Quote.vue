@@ -1,10 +1,29 @@
 <template>
   <article class="q-pa-md">
-    <p class="text-h4">Quotation</p>
+    <div class="text-h4 q-mb-md">Quotation
+      <p class="float-right no-margin" v-if="isDisabled">
+        <q-btn
+          color="positive"
+          label="Edit"
+          size="md"
+          @click="flag = false"
+          class="q-mr-md"
+        />
+        <q-btn
+          color="positive"
+          label="Convert to Sales"
+          size="md"
+          @click="sendToSales"
+          class="q-mr-md"
+        />
+        <q-btn color="positive" label="Print" size="md"/>
+      </p>
+    </div>
     <q-input
       v-model="quoteDate"
       filled
       label="Quotation Date"
+      :disable="isDisabled"
     >
       <template v-slot:append>
         <q-icon name="event" class="cursor-pointer">
@@ -22,10 +41,10 @@
         </q-icon>
       </template>
     </q-input>
-    <q-input v-model="quotes.destin" label="Quotation To" class="q-mb-sm" />
-    <q-input v-model="quotes.address" label="Place of Supply(Multi line)" class="q-mb-sm" autogrow/>
+    <q-input v-model="quotes.destin" label="Quotation To" class="q-mb-sm" :disable="isDisabled"/>
+    <q-input v-model="quotes.address" label="Place of Supply(Multi line)" class="q-mb-sm" autogrow :disable="isDisabled"/>
     <div class="row q-mb-md q-gutter-x-md">
-      <q-btn-dropdown dense color="primary" label="Int. Sate GST Taxes" class="col">
+      <q-btn-dropdown dense color="primary" label="Int. Sate GST Taxes" class="col" :disable="isDisabled">
         <q-list>
           <q-item clickable v-close-popup @click="setIGST(value)" v-for="(value) in gstValues" :key="value">
             <q-item-section>
@@ -34,7 +53,7 @@
           </q-item>
         </q-list>
       </q-btn-dropdown>
-      <q-btn-dropdown dense color="primary" label="State GST Taxes" class="col">
+      <q-btn-dropdown dense color="primary" label="State GST Taxes" class="col" :disable="isDisabled">
         <q-list>
           <q-item clickable v-close-popup @click="setGST(value)" v-for="(value) in gstValues" :key="value">
             <q-item-section>
@@ -45,20 +64,18 @@
       </q-btn-dropdown>
     </div>
     <div class="row q-mb-md q-gutter-x-md">
-      <q-input filled dense class="col" label="IGST Tax %" disable :value="sales.igst"/>
-      <q-input filled dense class="col" label="CGST Tax %" disable :value="sales.cgst"/>
-      <q-input filled dense class="col" label="SGST Tax %" disable :value="sales.sgst"/>
+      <q-input dense class="col" label="IGST Tax %" disable :value="quotes.igst"/>
+      <q-input dense class="col" label="CGST Tax %" disable :value="quotes.cgst"/>
+      <q-input dense class="col" label="SGST Tax %" disable :value="quotes.sgst"/>
     </div>
     <q-input class="q-mb-sm" label="Total" disable :value="getTotal()" />
     <q-input class="q-mb-sm" label="Taxable Value" disable :value="quotes.tax" />
     <q-input class="q-mb-sm" label="Total (incl. tax)" disable v-model="quotes.taxTotal" />
     <Items
-      actionName="Create Quotation"
+      :actionName="!!this.quotes.id ? 'Update Quotation' : 'Create Quotation'"
       :items="quotes.items"
-      :sgst="parseFloat(quotes.sgst)"
-      :cgst="parseFloat(quotes.cgst)"
-      :igst="parseFloat(quotes.igst)"
-      :actionCallback="saveQuotation"
+      :actionCallback="!!this.quotes.id ? updateQuotes: saveQuotes"
+      :disable="isDisabled"
     />
   </article>
 </template>
@@ -80,7 +97,8 @@ export default {
         tax: 0.00,
         taxTotal: 0.00
       },
-      gstValues: [0, 5, 8, 12, 18, 28]
+      gstValues: [0, 5, 8, 12, 18, 28],
+      flag: true
     };
   },
   computed: {
@@ -91,13 +109,16 @@ export default {
       set(value) {
         this.quotes.date = setFormatDate(value)
       }
+    },
+    isDisabled() {
+      return !!this.quotes.id && this.flag;
     }
   },
   components: {
     Items
   },
   methods: {
-    saveQuotation() {
+    saveQuotes() {
       this.$store.dispatch('quote/add', this.quotes)
     },
     getTotal() {
@@ -110,16 +131,30 @@ export default {
       this.quotes.taxTotal = total + this.quotes.tax | 0.0;
       return total;
     },
-    setGst(value) {
+    setGST(value) {
       this.quotes.cgst = value/2;
       this.quotes.sgst = value/2;
+      this.quotes.igst = 0;
     },
     setIGST (value) {
       this.quotes.igst = value;
+      this.quotes.cgst = 0;
+      this.quotes.sgst = 0;
     },
-    print() {
-      this.$router.push({name: 'Print', params: {quotes: this.quotes}})
+    updateQuotes() {
+      this.$store.commit("quote/redirected", true)
+      this.$store.dispatch("quote/update", this.quotes);
+      this.$router.push("/quotes")
+    },
+    sendToSales() {
+      var sales = {...this.quotes}
+      sales.id = ''
+      this.$store.commit("sales/setCurrent", sales);
+      this.$router.push({ name: "Sale" });
     }
+  },
+  created() {
+    this.quotes = _.cloneDeep(this.$store.getters["quote/getCurrentRecord"])
   }
 };
 </script>

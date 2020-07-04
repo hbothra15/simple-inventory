@@ -5,10 +5,10 @@ const routes = [
     children: [
       { path: '', component: () => import('pages/Index.vue') },
       { path: 'sales', component: () => import('pages/SalesTable.vue') },
-      { path: 'sale', component: () => import('pages/Sales.vue'), props: true },
+      { path: 'sale', component: () => import('pages/Sales.vue'), props: true, name: 'Sale' },
       { path: 'purchase', component: () => import('pages/Purchase.vue'), props: true, name:'Purchase' },
       { path: 'purchases', component: () => import('pages/PurchaseTable.vue') },
-      { path: 'quote', component: () => import('pages/Quote.vue'), props: true },
+      { path: 'quote', component: () => import('pages/Quote.vue'), props: true, name: 'Quote' },
       { path: 'quotes', component: () => import('pages/QuotesTable.vue') },
       { path: 'stock', component: () => import('pages/Stock.vue') },
       { path: 'print', name: 'Print', props: true, component: () => import('pages/Print.vue') }

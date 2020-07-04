@@ -67,7 +67,7 @@
     <Items
       :actionName="!!this.sales.id ? 'Update Sales Order' : 'Create Sales Order'"
       :items="sales.items"
-      :actionCallback="!!this.purchase.id ? updatePurchase: savePurchase"
+      :actionCallback="!!this.sales.id ? updateSale: saveSale"
       :disable="isDisabled"
     />
   </article>
@@ -125,14 +125,15 @@ export default {
       this.sales.cgst = 0;
       this.sales.sgst = 0;
     },
-    updateSales() {
+    updateSale() {
       this.$store.commit("sales/redirected", true)
       this.$store.dispatch("sales/update", this.sales);
       this.$router.push("/sales")
     }
   },
   created() {
-    this.sales = _.cloneDeep(this.$store.getters["sale/getCurrentRecord"])
+    this.sales = _.cloneDeep(this.$store.getters["sales/getCurrentRecord"])
+    console.log(this.sales)
   }
 };
 </script>
