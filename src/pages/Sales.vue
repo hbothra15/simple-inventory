@@ -1,9 +1,21 @@
 <template>
   <article class="q-pa-md">
-    <p class="text-h4">Sales</p>
+    <div class="text-h4 q-mb-md">Sales
+      <p class="float-right no-margin" v-if="isDisabled">
+        <q-btn
+          color="positive"
+          label="Edit"
+          size="md"
+          @click="flag = false"
+          class="q-mr-md"
+        />
+        <q-btn color="positive" label="Print" size="md"/>
+      </p>
+    </div>
     <q-input
       v-model="saleDate"
       filled
+      :disable="isDisabled"
       label="Bill Date"
     >
       <template v-slot:append>
@@ -22,10 +34,10 @@
         </q-icon>
       </template>
     </q-input>
-    <q-input v-model="sales.destin" label="Bill To" class="q-mb-sm" />
-    <q-input v-model="sales.address" label="Place of Supply(Multi line)" class="q-mb-sm" autogrow/>
+    <q-input v-model="sales.destin" label="Bill To" class="q-mb-sm" :disable="isDisabled"/>
+    <q-input v-model="sales.address" label="Place of Supply(Multi line)" class="q-mb-sm" autogrow :disable="isDisabled"/>
     <div class="row q-mb-md q-gutter-x-md">
-      <q-btn-dropdown dense color="primary" label="Int. Sate GST Taxes" class="col">
+      <q-btn-dropdown dense color="primary" label="Int. Sate GST Taxes" class="col" :disable="isDisabled">
         <q-list>
           <q-item clickable v-close-popup @click="setIGST(value)" v-for="(value) in gstValues" :key="value">
             <q-item-section>
@@ -34,7 +46,7 @@
           </q-item>
         </q-list>
       </q-btn-dropdown>
-      <q-btn-dropdown dense color="primary" label="State GST Taxes" class="col">
+      <q-btn-dropdown dense color="primary" label="State GST Taxes" class="col" :disable="isDisabled">
         <q-list>
           <q-item clickable v-close-popup @click="setGST(value)" v-for="(value) in gstValues" :key="value">
             <q-item-section>
@@ -45,20 +57,18 @@
       </q-btn-dropdown>
     </div>
     <div class="row q-mb-md q-gutter-x-md">
-      <q-input filled dense class="col" label="IGST Tax %" disable :value="sales.igst"/>
-      <q-input filled dense class="col" label="CGST Tax %" disable :value="sales.cgst"/>
-      <q-input filled dense class="col" label="SGST Tax %" disable :value="sales.sgst"/>
+      <q-input disable dense class="col" label="IGST Tax %" :value="sales.igst"/>
+      <q-input disable dense class="col" label="CGST Tax %" :value="sales.cgst"/>
+      <q-input disable dense class="col" label="SGST Tax %" :value="sales.sgst"/>
     </div>
     <q-input class="q-mb-sm" label="Total" disable :value="getTotal()" />
     <q-input class="q-mb-sm" label="Taxable Value" disable :value="sales.tax" />
     <q-input class="q-mb-sm" label="Total (incl. tax)" disable v-model="sales.taxTotal" />
     <Items
-      actionName="Create Sales Order"
+      :actionName="!!this.sales.id ? 'Update Sales Order' : 'Create Sales Order'"
       :items="sales.items"
-      :sgst="parseFloat(sales.sgst)"
-      :cgst="parseFloat(sales.cgst)"
-      :igst="parseFloat(sales.igst)"
-      :actionCallback="saveSale"
+      :actionCallback="!!this.purchase.id ? updatePurchase: savePurchase"
+      :disable="isDisabled"
     />
   </article>
 </template>
@@ -69,19 +79,9 @@ import Items from "components/Items";
 export default {
   data() {
     return {
-      sales: {
-        date: new Date(),
-        destin: "",
-        address: "",
-        igst: 0,
-        cgst: 0,
-        sgst: 0,
-        items: [],
-        total: 0.0,
-        tax: 0.00,
-        taxTotal: 0.00
-      },
-      gstValues: [0, 5, 8, 12, 18, 28]
+      sales: {},
+      gstValues: [5, 8, 12, 18, 28],
+      flag: true
     };
   },
   computed: {
@@ -92,6 +92,9 @@ export default {
       set(value) {
         this.sales.date = setFormatDate(value)
       }
+    },
+    isDisabled() {
+      return !!this.sales.id && this.flag;
     }
   },
   components: {
@@ -100,6 +103,7 @@ export default {
   methods: {
     saveSale() {
       this.$store.dispatch('sales/add', this.sales)
+      this.$router.push("/sales")
     },
     getTotal() {
       const tax = (parseFloat(this.sales.igst) + parseFloat(this.sales.cgst) + parseFloat(this.sales.sgst)) / 100
@@ -121,9 +125,14 @@ export default {
       this.sales.cgst = 0;
       this.sales.sgst = 0;
     },
-    print() {
-      this.$router.push({name: 'Print', params: {sales: this.sales}})
+    updateSales() {
+      this.$store.commit("sales/redirected", true)
+      this.$store.dispatch("sales/update", this.sales);
+      this.$router.push("/sales")
     }
+  },
+  created() {
+    this.sales = _.cloneDeep(this.$store.getters["sale/getCurrentRecord"])
   }
 };
 </script>

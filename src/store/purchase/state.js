@@ -1,5 +1,8 @@
 export default function () {
   return {
-    entries: []
+    entries: [],
+    current: {},
+    loading: true,
+    redirected: false
   }
 }

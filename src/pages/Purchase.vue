@@ -1,22 +1,37 @@
 <template>
   <article class="q-pa-md">
-    <p class="text-h4">Purchase</p>
+    <div class="text-h4 q-mb-md">
+      Purchase
+      <p class="float-right no-margin" v-if="isDisabled">
+        <q-btn
+          color="positive"
+          label="Edit"
+          size="md"
+          @click="flag = false"
+          class="q-mr-md"
+        />
+        <q-btn color="positive" label="Print" size="md"/>
+      </p>
+    </div>
     <q-input
       v-model="purchase.invoice"
       label="Invoice No."
       class="q-mb-sm"
+      :disable="isDisabled"
       :rules="[val => !!val || 'Field is required']"
     />
     <q-input
       v-model="purchase.gstin"
       label="GSTIN"
       class="q-mb-sm"
+      :disable="isDisabled"
       :rules="[val => !!val || 'Field is required']"
     />
     <q-input
       v-model="purchaseDate"
       filled
       label="YYYY-MM-DD"
+      :disable="isDisabled"
     >
       <template v-slot:append>
         <q-icon name="event" class="cursor-pointer">
@@ -38,10 +53,11 @@
       v-model="purchase.source"
       label="Supplier"
       class="q-mb-sm"
+      :disable="isDisabled"
       :rules="[val => !!val || 'Field is required']"
     />
     <div class="row q-mb-sm q-gutter-sm">
-      <q-btn-dropdown color="primary" label="GST Taxes">
+      <q-btn-dropdown color="primary" label="GST Taxes" :disable="isDisabled">
         <q-list>
           <q-item
             clickable
@@ -92,44 +108,41 @@
       v-model="purchase.taxTotal"
     />
     <Items
-      actionName="Add Purchase Order"
+      :actionName="!!this.purchase.id ? 'Update Purchase Order' : 'Add Purchase Order'"
       :items="purchase.items"
-      :actionCallback="savePurchase"
+      :actionCallback="!!this.purchase.id ? updatePurchase: savePurchase"
+      :disable="isDisabled"
     />
   </article>
 </template>
 
 <script>
+import _ from 'lodash'
 import Items from "components/Items";
-import {getFormatDate, setFormatDate} from "../services/DateUtil"
+import { getFormatDate, setFormatDate } from "../services/DateUtil";
 export default {
   data() {
     return {
-      purchase: {
-        invoice: "",
-        gstin: "",
-        date: new Date(),
-        source: "",
-        igst: 0,
-        cgst: 0,
-        sgst: 0,
-        items: [],
-        total: 0.0,
-        tax: 0.0,
-        taxTotal: 0.0
-      },
-      gstValues: [5, 8, 12, 18, 28]
+      gstValues: [5, 8, 12, 18, 28],
+      flag: true,
+      purchase: {}
     };
   },
   computed: {
     purchaseDate: {
       get() {
-        return getFormatDate(this.purchase.date)
+        return getFormatDate(this.purchase.date);
       },
       set(value) {
-        this.purchase.date = setFormatDate(value)
+        this.purchase.date = setFormatDate(value);
       }
+    },
+    isDisabled() {
+      return !!this.purchase.id && this.flag;
     }
+  },
+  created() {
+    this.purchase = _.cloneDeep(this.$store.getters["purchase/getCurrentRecord"]);
   },
   components: {
     Items
@@ -137,6 +150,12 @@ export default {
   methods: {
     savePurchase() {
       this.$store.dispatch("purchase/add", this.purchase);
+      this.$router.push("/purchases")
+    },
+    updatePurchase() {
+      this.$store.commit("purchase/redirected", true)
+      this.$store.dispatch("purchase/update", this.purchase);
+      this.$router.push("/purchases")
     },
     getTotal() {
       const tax =

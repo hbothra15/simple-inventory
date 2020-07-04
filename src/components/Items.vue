@@ -6,29 +6,29 @@
       class="row si-item-row q-pb-sm q-gutter-sm q-mt-sm"
       :class="index === 0 ? 'si-item-row-first' : ''"
     >
-      <q-input outlined dense class="col-3" label="Sr.No" disable :value="index + 1"  :rules="[val => !!val || 'Field is required']"/>
-      <q-input outlined dense class="col q-pr-sm" label="HSN Code" v-model="row.code" type="text" :rules="[val => !!val || 'Field is required']"/>
-      <q-input outlined dense class="col-12 q-pr-md" label="Item Name" v-model="row.item" type="text" :rules="[val => !!val || 'Field is required']"/>
-      
-      <q-input outlined dense class="col-3" label="Quantity" v-model="row.qnty"
+      <q-input dense class="col-3" label="Sr.No" disable :value="index + 1"  :rules="[val => !!val || 'Field is required']"/>
+      <q-input :disable="disable" outlined dense class="col q-pr-sm" label="HSN Code" v-model="row.code" type="text" :rules="[val => !!val || 'Field is required']"/>
+      <q-input :disable="disable" outlined dense class="col-12 q-pr-md" label="Item Name" v-model="row.item" type="text" :rules="[val => !!val || 'Field is required']"/>
+
+      <q-input :disable="disable" outlined dense class="col-3" label="Quantity" v-model="row.qnty"
         type="number" :rules="[val => !!val || 'Field is required']"
       />
-      <q-input outlined dense class="col-3" label="Unit" v-model="row.unit" type="text" :rules="[val => !!val || 'Field is required']"/>
-      <q-input outlined dense class="col q-pr-md" label="Rate" v-model="row.rate" type="number" prefix="INR. " :rules="[val => !!val || 'Field is required']"/>
+      <q-input :disable="disable" outlined dense class="col-3" label="Unit" v-model="row.unit" type="text" :rules="[val => !!val || 'Field is required']"/>
+      <q-input :disable="disable" outlined dense class="col q-pr-md" label="Rate" v-model="row.rate" type="number" prefix="INR. " :rules="[val => !!val || 'Field is required']"/>
       <q-input outlined dense
-        filled
+        :disable="disable"
         class="col-10 q-pr-md"
         label="Amount"
         type="number"
         :value="calcAmnt(row)"
         prefix="INR. "
       />
-      <q-btn round color="negative" label="-" push @click="remove(index)" dense/>
+      <q-btn round color="negative" label="-" push @click="remove(index)" dense :disable="disable"/>
     </div>
     <div class="row q-mt-sm fit justify-between">
-      <q-btn class="col-5" color="positive" :label="actionName" size="md"
+      <q-btn class="col-5" color="positive" :label="actionName" size="md" :disable="disable"
         @click="actionCallback" :class="items.length === 0 ? 'hideButton': ''"/>
-      <q-btn class="col-5" color="primary" label="Add Item" size="md"
+      <q-btn class="col-5" color="primary" label="Add Item" size="md" :disable="disable"
         @click="addItem"/>
     </div>
   </section>
@@ -57,11 +57,15 @@ export default {
     actionCallback: {
       type: Function,
       required: true
+    },
+    disable: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {
     calcAmnt(eachRow) {
-      const num = (eachRow.qnty * eachRow.rate); 
+      const num = (eachRow.qnty * eachRow.rate);
       eachRow.amnt = Math.round((num + Number.EPSILON) * 100) / 100
       return eachRow.amnt
     },

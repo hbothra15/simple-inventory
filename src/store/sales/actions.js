@@ -1,21 +1,31 @@
-import {transact} from "../../services/Transaction.js"
-import {getFormatDate, getUniqueKeyFromDate} from "../../services/DateUtil"
+import { transact, updateTransact } from "../../services/Transaction.js";
+import { getFormatDate, getUniqueKeyFromDate } from "../../services/DateUtil";
 import firebaseService from "../../services/firebase";
 var db = firebaseService.firestore;
+const type = "sales";
 
 export function add({ commit }, payload) {
-  transact(payload, "sales", `${getFormatDate(payload.date)}-${getUniqueKeyFromDate()}`)
+  transact(
+    payload,
+    type,
+    `${getFormatDate(payload.date)}-${getUniqueKeyFromDate()}`
+  );
 }
 
-export function read({ commit }, page) {
-  const type="sales"
+export function update({ commit }, payload) {
+  updateTransact(payload, type, payload.id);
+  commit("loading", true);
+}
+
+export function read({ commit }) {
   const typeRef = db().collection(type);
-  typeRef.orderBy("date", "desc")
-    .onSnapshot((docs) => {
-      docs.forEach((doc) => {
-        var data = {...doc.data()}
-        data.id = doc.id
-        commit('addSales', data)
-      })
-    })
+  typeRef.orderBy("date", "desc").onSnapshot(docs => {
+    commit("cleanup");
+    docs.forEach(doc => {
+      var data = { ...doc.data() };
+      data.id = doc.id;
+      commit("addEntry", data);
+    });
+    commit("loading", false);
+  });
 }

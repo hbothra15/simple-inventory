@@ -1,63 +1,89 @@
 <template>
   <div class="q-pa-md">
-    <q-table title="Quotations" :data="data" :columns="columns" row-key="id" selection="single" @row-click="selected"/>
+    <q-table
+      title="Quotations"
+      :data="data"
+      :columns="columns"
+      row-key="id"
+      selection="single"
+      @row-click="selected"
+      :loading="loading"
+    />
+    <q-page-sticky position="bottom-right" :offset="[18, 18]">
+      <q-btn fab icon="add" color="accent" @click="selected('', emptyData)" />
+    </q-page-sticky>
   </div>
 </template>
 
 <script>
-import { getFormatDate } from "../services/DateUtil"
+import { getFormatDate } from "../services/DateUtil";
 export default {
-  data () {
+  data() {
     return {
       columns: [
         {
-          name: 'date',
+          name: "date",
           required: true,
-          field: 'date',
-          label: 'Sales Date',
+          field: "date",
+          label: "Quotation Date",
           sortable: true,
-          align: 'left'
+          align: "left"
         },
-        { name: 'destin', label: 'Bill To', field: 'destin', sortable: true },
-        { name: 'address', label: 'Billing Address', field: 'adress', sortable: true },
-        { name: 'total', align: 'center', label: 'Total', field: 'total' },
-        { name: 'tax', align: 'center', label: 'Total Tax', field: 'tax' },
-        { name: 'taxTotal', align: 'center', label: 'Total(incl. tax)', field: 'taxTotal' }
+        { name: "destin", label: "Quote To", field: "destin", sortable: true },
+        {
+          name: "address",
+          label: "Billing Address",
+          field: "adress",
+          sortable: true
+        },
+        { name: "total", align: "center", label: "Total", field: "total" },
+        { name: "tax", align: "center", label: "Total Tax", field: "tax" },
+        {
+          name: "taxTotal",
+          align: "center",
+          label: "Total(incl. tax)",
+          field: "taxTotal"
+        }
       ],
       emptyData: {
         date: new Date(),
         destin: "",
+        address: "",
         igst: 0,
         cgst: 0,
         sgst: 0,
         items: [],
-        total: 0.00,
-        tax: 0.00,
-        taxTotal: 0.00
+        total: 0.0,
+        tax: 0.0,
+        taxTotal: 0.0
       }
-    }
+    };
   },
   computed: {
     data() {
-      return this.$store.getters['quote/getRecords'].map(record => ({
-        id: record.id,
-        date: getFormatDate(record.date.toDate()),
-        source: record.destin,
-        address: record.address,
-        total: record.total,
-        tax: record.tax,
-        taxTotal: record.taxTotal,
-        items: record.items
-      }))
+      return this.$store.getters["quote/getRecords"].map(record => {
+        var data = { ...record };
+        data.date = getFormatDate(record.date.toDate());
+        return data;
+      });
+    },
+    loading() {
+      return this.$store.getters['quote/loading']
     }
   },
   mounted() {
-    this.$store.commit('quote/cleanup')
-    this.$store.dispatch('quote/read')
+    if (!this.$store.getters["quote/redirected"]) {
+      this.$store.commit("quote/cleanup");
+      this.$store.dispatch("quote/read");
+      this.$store.commit("quote/redirected", true );
+    }
   },
   methods: {
     selected(event, row) {
-      console.log(`${row.id} record has been selected`)
+      const record = _.clone(row);
+      record.date = setFormatDate(record.date);
+      this.$store.commit("quote/setCurrent", record);
+      this.$router.push({ name: "Quote" });
     }
   }
 };
