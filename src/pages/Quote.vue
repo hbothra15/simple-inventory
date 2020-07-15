@@ -119,7 +119,9 @@ export default {
   },
   methods: {
     saveQuotes() {
+      this.$store.commit("quote/redirected", true)
       this.$store.dispatch('quote/add', this.quotes)
+      this.$router.push("/quotes")
     },
     getTotal() {
       const tax = (parseFloat(this.quotes.igst) + parseFloat(this.quotes.cgst) + parseFloat(this.quotes.sgst)) / 100

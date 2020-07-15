@@ -6,6 +6,7 @@ export function read({ commit }) {
   const typeRef = db().collection(type);
   commit("loading", true);
   typeRef.onSnapshot(docs => {
+    console.log('Update Inventory')
     commit("cleanup");
     docs.forEach(doc => {
       var data = { ...doc.data() };

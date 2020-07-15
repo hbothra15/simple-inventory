@@ -49,6 +49,9 @@ export default {
     route(key){
       this.$router.push('/'+key)
     }
+  },
+  mounted() {
+    this.$store.dispatch('inventory/read')
   }
 };
 </script>

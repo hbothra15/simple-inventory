@@ -3,13 +3,6 @@
     <div class="text-h4 q-mb-md">
       Purchase
       <p class="float-right no-margin" v-if="isDisabled">
-        <q-btn
-          color="positive"
-          label="Edit"
-          size="md"
-          @click="flag = false"
-          class="q-mr-md"
-        />
         <q-btn color="positive" label="Print" size="md"/>
       </p>
     </div>

@@ -10,8 +10,9 @@ export function add({ commit }, payload) {
 }
 
 export function update({ commit }, payload) {
-  updateTransact(payload, type, payload.id);
   commit("loading", true);
+  updateTransact(payload, type, payload.id);
+  commit("loading", false);
 }
 
 export function read({ commit }) {

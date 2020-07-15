@@ -36,7 +36,7 @@ export async function transact(payload, type, id) {
         var keyDatas = await Promise.all(getCalls);
         keyDatas.forEach(keyData => {
           var serverCount = keyData.exists
-            ? parseFloat(keyData.data().count)
+            ? parseFloat(keyData.data().qnty)
             : 0;
           switch (type) {
             case "purchase":
@@ -48,7 +48,7 @@ export async function transact(payload, type, id) {
             default:
               break;
           }
-          itemCollection[keyData.id].count = count[keyData.id];
+          itemCollection[keyData.id].qnty = count[keyData.id];
           transaction.set(inventory.doc(keyData.id), {
             ...itemCollection[keyData.id]
           });
@@ -69,6 +69,7 @@ export async function updateTransact(payload, type) {
     keys = [],
     itemCollection = {},
     getCalls = [],
+    oldCount = {},
     count = {};
   try {
     // Start firebase transaction
@@ -86,18 +87,19 @@ export async function updateTransact(payload, type) {
             getCalls.push(transaction.get(inventory.doc(key)));
           }
           // populate the count for each unique item based on key
-          if (!!count[key]) {
-            count[key] += parseFloat(element.qnty);
+          if (!!oldCount[key]) {
+            oldCount[key] += parseFloat(element.qnty);
           } else {
-            count[key] = parseFloat(element.qnty);
+            oldCount[key] = parseFloat(element.qnty);
           }
         });
         // Get diffrence in item quantity from Old and new (old-new)
         payload.items.forEach(element => {
-          key = `${element.item.toLowerCase()}-${element.code.toLowerCase()}`;
+          key = getItemKey(element);
           // push the Key into arraynamed as Keys if not exists
           if (!keys.includes(key)) {
             keys.push(key);
+            itemCollection[key] = element;
             // push all getter to promise type array
             getCalls.push(transaction.get(inventory.doc(key)));
           }
@@ -112,22 +114,22 @@ export async function updateTransact(payload, type) {
         var keyDatas = await Promise.all(getCalls);
         keyDatas.forEach(keyData => {
           var serverCount = keyData.exists && keyData.data()
-            ? parseFloat(keyData.data().count)
+            ? parseFloat(keyData.data().qnty)
             : 0;
           switch (type) {
-            // For purcase (inventory - (old-new))
+            // For purcase (inventory + (delta))
             case "purchase":
-              count[keyData.id] = serverCount - count[keyData.id];
+              count[keyData.id] = serverCount + count[keyData.id] - oldCount[keyData.id];
               break;
-            // For sales (inventory + (old-new))
+            // For sales (inventory - (delta))
             case "sales":
-              count[keyData.id] = serverCount + count[keyData.id];
+              count[keyData.id] = serverCount - count[keyData.id] + oldCount[keyData.id];
               break;
             default:
               break;
           }
           if(itemCollection && itemCollection[keyData.id]) {
-            itemCollection[keyData.id].count = count[keyData.id];
+            itemCollection[keyData.id].qnty = count[keyData.id];
           }
           // Set the changed entry if any to inventory
           transaction.set(inventory.doc(keyData.id), {

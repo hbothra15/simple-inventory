@@ -15,8 +15,9 @@ export default {
     return {
       columns: [
         { name: "item", align: "center", label: "Item Name", field: "item" },
-        { name: "unit", align: "center", label: "Unit", field: "count" },
         { name: "code", align: "center", label: "HSU Code", field: "code" },
+        { name: "qnty", align: "center", label: "Current Qnty", field: "qnty" },
+        { name: "unit", align: "center", label: "Unit", field: "unit" },
         { name: "rate", align: "center", label: "Rate", field: "rate" }
       ]
     };

@@ -14,5 +14,4 @@ export default async (/* { app, router, Vue ... } */) => {
     appId: "1:538793562866:web:e4f84f45527ce79862f66b"
   };
   firebaseService.fBInit(firebaseConfig)
-  console.log(firebaseService.auth());
 }
