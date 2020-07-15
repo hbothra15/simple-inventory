@@ -1,18 +1,8 @@
 <template>
   <q-page class="flex flex-center">
-    <div class="full-width row wrap justify-center items-center content-center">
-      <q-btn
-        push
-        rounded
-        size="xl"
-        class="col-5 col-xs-5 q-ma-xs"
-        v-for="(value, index) in menu"
-        :color="value.color"
-        :label="value.label"
-        :key="index"
-        @click="value.callback"
-      />
-    </div>
+    Welcome to the RS Enterprises Inventory App.
+
+    For any technical issues reach out to&nbsp;<a href="mailto:hemant.bothra15@gmail.com?subject=Queries for Simple Inventory">Hemant</a>
   </q-page>
 </template>
 
