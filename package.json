@@ -15,6 +15,7 @@
     "axios": "^0.18.1",
     "core-js": "^3.6.5",
     "firebase": "^7.15.3",
+    "lodash": "^4.17.19",
     "quasar": "^1.0.0"
   },
   "devDependencies": {
